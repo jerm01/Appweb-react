@@ -12,10 +12,10 @@ export default function BottomNavbar() {
         <Link className={`nav-link ${pathname === "/quizzes" ? "text-primary" : ""}`} to="/quizzes">
           <i className="bi bi-list-check"></i><br />Quizzes
         </Link>
-        <Link className={`nav-link ${pathname === "/contact" ? "text-primary" : ""}`} to="/contact">
+        <Link className={`nav-link ${pathname === "/contacto" ? "text-primary" : ""}`} to="/contacto">
           <i className="bi bi-envelope-fill"></i><br />Contacto
         </Link>
-        <Link className={`nav-link ${pathname === "/about" ? "text-primary" : ""}`} to="/about">
+        <Link className={`nav-link ${pathname === "/sobre" ? "text-primary" : ""}`} to="/sobre">
           <i className="bi bi-info-circle-fill"></i><br />Nosotros
         </Link>
       </div>
