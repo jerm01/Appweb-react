@@ -19,7 +19,7 @@ export default function Home() {
           </p>
         </div>
         <div className="text-center">
-          <img src="/img/ods-points.png" alt="Los 17 ODS" className="img-fluid rounded shadow" style={{ maxWidth: "800px" }} />
+          <img src="/img/ods-points.png" alt="Los 17 ODS" className="img-fluid rounded shadow" style={{ maxWidth: "100%" }} />
         </div>
       </div>
     </>

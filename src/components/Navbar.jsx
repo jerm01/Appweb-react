@@ -1,25 +1,44 @@
-import { Link } from "react-router-dom";
+import { Navbar, Nav, Container, NavDropdown } from 'react-bootstrap';
+import { Link, useNavigate } from 'react-router-dom';
+import { useAuth } from '../context/AuthContext';
 
-export default function Navbar() {
+export default function NavigationBar() {
+  const { user, logout } = useAuth();
+  const navigate = useNavigate();
+
+  const handleLogout = async () => {
+    await logout();
+    navigate('/');
+  };
+
   return (
-    <nav className="navbar navbar-expand-lg navbar-light bg-white border-bottom shadow-sm sticky-top">
-      <div className="container">
-        <Link className="navbar-brand fw-bold text-primary" to="/">ODSQuiz</Link>
-        <button className="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
-          <span className="navbar-toggler-icon"></span>
-        </button>
-        
-        <div className="collapse navbar-collapse" id="navbarNav">
-          <ul className="navbar-nav ms-auto">
-            <li className="nav-item"><Link className="nav-link" to="/">Inicio</Link></li>
-            <li className="nav-item"><Link className="nav-link" to="/sobre">Sobre nosotros</Link></li>
-            <li className="nav-item"><Link className="nav-link" to="/contacto">Contacto</Link></li>
-            <li className="nav-item"><Link className="nav-link" to="/quizzes">Quizzes</Link></li>
-            <li className="nav-item"><Link className="nav-link" to="/login">Iniciar sesión</Link></li>
-            <li className="nav-item"><Link className="nav-link" to="/registro">Registrarse</Link></li>
-          </ul>
-        </div>
-      </div>
-    </nav>
+    <Navbar bg="light" expand="lg" className="shadow-sm">
+      <Container>
+        <Navbar.Brand as={Link} to="/">
+          ODSQuiz
+        </Navbar.Brand>
+        <Navbar.Toggle aria-controls="main-navbar" />
+        <Navbar.Collapse id="main-navbar">
+          <Nav className="me-auto">
+            <Nav.Link as={Link} to="/">Inicio</Nav.Link>
+            <Nav.Link as={Link} to="/quizzes">Quizzes</Nav.Link>
+            <Nav.Link as={Link} to="/about">Sobre los ODS</Nav.Link>
+            <Nav.Link as={Link} to="/contact">Contacto</Nav.Link>
+          </Nav>
+          <Nav>
+            {user ? (
+              <NavDropdown title={user.displayName || user.email} id="user-dropdown">
+                <NavDropdown.Item onClick={handleLogout}>Cerrar sesión</NavDropdown.Item>
+              </NavDropdown>
+            ) : (
+              <>
+                <Nav.Link as={Link} to="/login">Iniciar sesión</Nav.Link>
+                <Nav.Link as={Link} to="/register">Registrarse</Nav.Link>
+              </>
+            )}
+          </Nav>
+        </Navbar.Collapse>
+      </Container>
+    </Navbar>
   );
 }
