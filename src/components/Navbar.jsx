@@ -22,18 +22,20 @@ export default function NavigationBar() {
           <Nav className="me-auto">
             <Nav.Link as={Link} to="/">Inicio</Nav.Link>
             <Nav.Link as={Link} to="/quizzes">Quizzes</Nav.Link>
-            <Nav.Link as={Link} to="/about">Sobre los ODS</Nav.Link>
-            <Nav.Link as={Link} to="/contact">Contacto</Nav.Link>
+            <Nav.Link as={Link} to="/sobre">Sobre los ODS</Nav.Link>
+            <Nav.Link as={Link} to="/contacto">Contacto</Nav.Link>
           </Nav>
           <Nav>
             {user ? (
-              <NavDropdown title={user.displayName || user.email} id="user-dropdown">
-                <NavDropdown.Item onClick={handleLogout}>Cerrar sesión</NavDropdown.Item>
-              </NavDropdown>
+              <>
+                <Nav.Link href="/perfil">Perfil</Nav.Link>
+                <Nav.Link onClick={logout}>Cerrar sesión</Nav.Link>
+                <Navbar.Text className="ms-3">Bienvenido, {user.displayName || user.email}</Navbar.Text>
+              </>
             ) : (
               <>
-                <Nav.Link as={Link} to="/login">Iniciar sesión</Nav.Link>
-                <Nav.Link as={Link} to="/register">Registrarse</Nav.Link>
+                <Nav.Link href="/login">Iniciar Sesión</Nav.Link>
+                <Nav.Link href="/registro">Registrarse</Nav.Link>
               </>
             )}
           </Nav>

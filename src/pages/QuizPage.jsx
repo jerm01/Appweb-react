@@ -1,86 +1,149 @@
-import { useEffect, useState } from 'react';
-import { useParams } from 'react-router-dom';
-import { getQuestionsForQuiz } from '../firebase/firestore';
+import { useEffect, useState } from "react";
+import { useParams } from "react-router-dom";
+import { useAuth } from "../context/AuthContext";
+import { getQuestionsForQuiz, saveQuizResult } from "../firebase/firestore";
+import { Container, Spinner, Alert, Card, Button } from "react-bootstrap";
 
 export default function QuizPage() {
-  const { id } = useParams(); // id del quiz
-
+  const { user } = useAuth();
+  const { quizId, tema } = useParams();
   const [questions, setQuestions] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
   const [selectedAnswers, setSelectedAnswers] = useState({});
   const [submitted, setSubmitted] = useState(false);
+  const [score, setScore] = useState(null);
 
   useEffect(() => {
     const fetchData = async () => {
-      const preguntas = await getQuestionsForQuiz(id);
-      setQuestions(preguntas);
+      try {
+        const preguntas = await getQuestionsForQuiz(tema, quizId);
+        if (preguntas.length === 0) {
+          setError("Este quiz no tiene preguntas disponibles.");
+        } else {
+          setQuestions(preguntas);
+        }
+      } catch (err) {
+        console.error("Error al cargar preguntas:", err);
+        setError("Hubo un problema al cargar las preguntas.");
+      } finally {
+        setLoading(false);
+      }
     };
-    fetchData();
-  }, [id]);
 
-  const handleOptionClick = (questionId, optionIndex) => {
-    setSelectedAnswers((prev) => ({
-      ...prev,
-      [questionId]: optionIndex,
-    }));
+    fetchData();
+  }, [quizId, tema]);
+
+  const handleAnswer = (questionId, optionIndex) => {
+    if (!submitted) {
+      setSelectedAnswers(prev => ({ ...prev, [questionId]: optionIndex }));
+    }
   };
 
-  const handleSubmit = () => {
+  const handleSubmit = async () => {
+    let correctCount = 0;
+    questions.forEach((q) => {
+      const selected = selectedAnswers[q.id];
+      if (selected !== undefined && selected === q.CorrectAnswerIndex) {
+        correctCount++;
+      }
+    });
+
+    const total = questions.length;
+    const calculatedScore = (correctCount / total) * 100;
+    setScore(calculatedScore);
     setSubmitted(true);
+
+    if (user && user.uid) {
+      await saveQuizResult(user.uid, {
+        quizId,
+        tema,
+        correctCount,
+        total,
+        score: calculatedScore,
+        timestamp: new Date(),
+      });
+    }
   };
 
   return (
-    <div className="container mt-5">
-      <h2 className="mb-4">Preguntas del Quiz</h2>
+    <Container className="mt-5">
+      <h2 className="text-center mb-4">Preguntas del Quiz</h2>
 
-      {questions.length === 0 && (
-        <div className="alert alert-danger">Este quiz no tiene preguntas disponibles.</div>
+      {loading && (
+        <div className="text-center">
+          <Spinner animation="border" />
+          <p>Cargando preguntas...</p>
+        </div>
       )}
 
-      {questions.map((q, idx) => (
-        <div key={q.id} className="mb-4 p-3 border rounded shadow-sm">
-          <p><strong>Pregunta {idx + 1}:</strong> {q.QuestionText}</p>
-          <div className="d-flex flex-column">
-            {q.Options?.map((option, i) => {
-              const selected = selectedAnswers[q.id] === i;
-              const isCorrect = i === q.CorrectAnswerIndex;
+      {error && (
+        <Alert variant="danger" className="text-center">
+          {error}
+        </Alert>
+      )}
 
-              const getButtonClass = () => {
-                if (!submitted) {
-                  return selected ? 'btn btn-outline-primary mb-2' : 'btn btn-light mb-2';
-                }
+      {!loading && !error && questions.map((q, i) => (
+        <Card key={q.id} className="mb-4">
+          <Card.Body>
+            <Card.Title>
+              {i + 1}. {q.QuestionText}
+            </Card.Title>
 
-                if (selected && isCorrect) return 'btn btn-success mb-2';
-                if (selected && !isCorrect) return 'btn btn-danger mb-2';
-                if (isCorrect) return 'btn btn-success mb-2';
-                return 'btn btn-light mb-2';
+            {q.ImageUrl && (
+              <img
+                src={q.ImageUrl}
+                alt={`Imagen pregunta ${i + 1}`}
+                className="img-fluid mb-3"
+              />
+            )}
+
+            {q.Options.map((option, index) => {
+              const isCorrect = q.CorrectAnswerIndex === index;
+              const isSelected = selectedAnswers[q.id] === index;
+
+              const getVariant = () => {
+                if (!submitted) return isSelected ? "primary" : "outline-primary";
+                if (isSelected && isCorrect) return "success";
+                if (isSelected && !isCorrect) return "danger";
+                if (!isSelected && isCorrect) return "success";
+                return "outline-secondary";
               };
 
               return (
-                <button
-                  key={i}
-                  className={getButtonClass()}
-                  onClick={() => handleOptionClick(q.id, i)}
+                <Button
+                  key={index}
+                  variant={getVariant()}
+                  onClick={() => handleAnswer(q.id, index)}
+                  className="d-block w-100 text-start mb-2"
                   disabled={submitted}
                 >
                   {option}
-                </button>
+                </Button>
               );
             })}
-          </div>
-        </div>
+          </Card.Body>
+        </Card>
       ))}
 
       {!submitted && questions.length > 0 && (
-        <button className="btn btn-primary mt-3" onClick={handleSubmit}>
-          Enviar respuestas
-        </button>
+        <div className="text-center">
+          <Button
+            className="mt-3"
+            variant="primary"
+            onClick={handleSubmit}
+            disabled={Object.keys(selectedAnswers).length < questions.length}
+          >
+            Enviar Respuestas
+          </Button>
+        </div>
       )}
 
       {submitted && (
-        <div className="alert alert-info mt-4">
-          Has finalizado el quiz. Puedes revisar tus respuestas arriba.
-        </div>
+        <Alert variant="info" className="mt-4 text-center">
+          ¡Terminaste! Obtuviste {score?.toFixed(2)}%
+        </Alert>
       )}
-    </div>
+    </Container>
   );
 }

@@ -12,6 +12,7 @@ import BottomNavbar from "./components/BottomNavbar";
 import Sobre from "./pages/SobreODS";
 import SelectTema from "./pages/SelectTema";
 import QuizzesByTema from "./pages/QuizzesByTema";
+import ProfilePage from './pages/ProfilePage';
 import QuizPage from './pages/QuizPage';
 
 function App() {
@@ -30,13 +31,14 @@ function App() {
             <Route path="/login" element={<Login />} />
             <Route path="/quizzes" element={<SelectTema />} />
             <Route path="/quizzes/:tema" element={<QuizzesByTema />} />
-            <Route path="/quiz/:quizId" element={<QuizPage />} />
+            <Route path="/quiz/:tema/:quizId" element={<QuizPage />} />
+            <Route path="/perfil" element={<ProfilePage />} />
           </Routes>
         </main>
 
         <Footer />
       </div>
-        <BottomNavbar />
+
     </Router>
     
   );

@@ -66,7 +66,7 @@ export default function QuizzesByTema() {
                     className="btn btn-primary"
                     onClick={() => {
                         localStorage.setItem('temaSeleccionado', tema);
-                        window.location.href = `/quiz/${quiz.id}`;
+                        window.location.href = `/quiz/${tema}/${quiz.id}`;
                     }}
                     >
                     Contestar
