@@ -1,9 +1,15 @@
+/* eslint-disable no-restricted-globals */
+/* eslint-env serviceworker */
+import { precacheAndRoute } from 'workbox-precaching';
+
 const CACHE_NAME = "odsquiz-cache-v1";
 const urlsToCache = [
   "/",
   "/index.html",
   "/manifest.json",
-  "/icons/icon.png"
+  "/icons/icon-192.png",
+  "/icons/icon-512.png",
+  "/icons/icon.png",
 ];
 
 self.addEventListener("install", event => {
@@ -27,3 +33,5 @@ self.addEventListener("fetch", event => {
     caches.match(event.request).then(response => response || fetch(event.request))
   );
 });
+
+precacheAndRoute(self.__WB_MANIFEST);
